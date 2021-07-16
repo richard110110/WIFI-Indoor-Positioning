@@ -1,3 +1,6 @@
-WIFI indoor-positioning
+# WIFI indoor-positioning
 
-Please Run this application on the Real Device because of the Location function
+
+### This is a important notes
+
+Please Run this application on the Real Android Device because of the Location function
