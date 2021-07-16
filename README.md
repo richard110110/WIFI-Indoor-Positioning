@@ -8,7 +8,7 @@ Please Run this application on the Real Android Device because of the Location f
 
 This is the interface of the app:
 
-![Image of interface](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/Capture.PNG?raw=true)
+![Image of interface](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/Screenshot_20210716-120606.jpg?raw=true)
 
 This is the interface of database:
 
