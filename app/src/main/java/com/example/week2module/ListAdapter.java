@@ -7,14 +7,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ListAdapter extends BaseAdapter {
 
     Context context;
     LayoutInflater inflater;
     List<ScanResult> wifiList;
+
+    Map<String, Object> networkData = new HashMap<>();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public ListAdapter(Context context, List<ScanResult> wifiList) {
         this.context = context;
@@ -49,15 +69,78 @@ public class ListAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.list_item, null);
             holder = new Holder();
 
-            holder.tvDetails = (TextView)view.findViewById(R.id.txtWifiName);
+            holder.networkName = (TextView)view.findViewById(R.id.txtWifiName);
             holder.RSSI = (TextView)view.findViewById(R.id.WiFiRSSI);
             view.setTag(holder);
 
         } else {
             holder = (Holder)view.getTag();
         }
-        holder.tvDetails.setText(wifiList.get(position).SSID + " " + wifiList.get(position).level);
-     //   holder.RSSI.setText(wifiList.get(position).level);
+      //  holder.tvDetails[0] = wifiList.get(position).SSID;
+
+        if(!wifiList.get(position).SSID.isEmpty()){
+            holder.networkName.setText(wifiList.get(position).SSID);
+            holder.RSSI.setText(String.valueOf(wifiList.get(position).level));
+        }
+
+
+
+        System.out.println("-----print SSID and Level-----");
+        System.out.println(wifiList.get(position).SSID + "," + wifiList.get(position).level);
+        System.out.println(wifiList.get(position).SSID.isEmpty());
+        try{
+            List<NetworkInterface> networkInterfaceList = Collections.list(NetworkInterface.getNetworkInterfaces());
+            String macAddress = "";
+            for(NetworkInterface networkInterface: networkInterfaceList){
+                if(networkInterface.getName().equalsIgnoreCase("wlan0")){
+                    for(int i = 0; i<networkInterface.getHardwareAddress().length;i++){
+                        String stringMacByte = Integer.toHexString(networkInterface.getHardwareAddress()[i] & 0xFF);
+
+                        if(stringMacByte.length() == 1){
+                            stringMacByte = "0" + stringMacByte;
+                        }
+                        macAddress = macAddress + stringMacByte.toUpperCase() + ":";
+                        HashMap<String, String> networkCollection = new HashMap<>();
+
+                        networkData.put("macAddress", macAddress);
+                      //  String networkDetail[] = new String[2];
+
+                        if(!wifiList.get(position).SSID.isEmpty()){
+                        //    networkCollection.put(wifiList.get(position).SSID, String.valueOf(wifiList.get(position).level));
+                          //  networkData.put("networkCollection", networkCollection);
+                               networkData.put(wifiList.get(position).SSID, String.valueOf(wifiList.get(position).level));
+
+                        }
+
+                        //    networkData.put("GeoPoint", LatLng.getText().toString());
+
+                    }
+                    break;
+                }
+            }
+           // Mac_address.setText(macAddress);
+
+        } catch (SocketException e){
+            e.printStackTrace();
+        }
+        DocumentReference docRef = db.collection("WBIP").document(networkData.get("macAddress").toString());
+        System.out.println("----firebase docRef------");
+        System.out.println(networkData);
+
+        //db.collection("WBIP").document(networkData.get("macAddress").toString()).push
+
+
+       db.collection("WBIP").document(networkData.get("macAddress").toString()).set(networkData, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+           @Override
+           public void onComplete(@NonNull  Task<Void> task) {
+                if(task.isSuccessful()){
+                    System.out.println("update");
+                }
+           }
+       });
+
+
+        //   holder.RSSI.setText(wifiList.get(position).level);
       //  holder.tvDetails.setText(wifiList.get(position).level);
         System.out.println("wifilist: " + wifiList.get(position).SSID);
         System.out.println(wifiList.get(position).level);
@@ -68,7 +151,7 @@ public class ListAdapter extends BaseAdapter {
     }
 
     class Holder{
-        TextView tvDetails;
+        TextView networkName;
         TextView RSSI;
     }
 }

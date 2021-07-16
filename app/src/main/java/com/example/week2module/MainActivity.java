@@ -16,12 +16,15 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +39,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.SetOptions;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -48,8 +56,12 @@ import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import io.opencensus.tags.Tag;
 
 import static androidx.constraintlayout.motion.widget.Debug.getLocation;
 
@@ -62,11 +74,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     WifiReceiver wifiReceiver;
     ListAdapter listAdapter;
     ListView networkListView;
-    List wifiList;
+    List<ScanResult> wifiList;
+    EditText editText;
+    Button buttonClick;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     TextView Mac_address;
     TextView LatLng;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+     Map<String, Object> networkData = new HashMap<>();
+    Double[] geoPoint = new Double[2];
 
 
 
@@ -81,6 +99,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         wifiManager = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
 
+        editText = (EditText)findViewById(R.id.manualText);
+        buttonClick = (Button)findViewById(R.id.click);
+
+        buttonClick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String data = editText.getText().toString();
+
+                networkData.put("manualCoordinate", data);
+
+                db.collection("WBIP").document(networkData.get("macAddress").toString()).set(networkData, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Toast.makeText(MainActivity.this, "Manual location Saved", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull  Exception e) {
+                        Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
+        });
+
+
+
 
 
 
@@ -91,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
           initMap();
           fusedLocationProviderClient = new FusedLocationProviderClient(this);
 
-          getCurrentLocation();
 
           getMacAddress();
 
@@ -102,10 +146,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         } else {
             ScanWifiList();
+            getCurrentLocation();
+
+            saveDataToFirebase();
+
+
         }
 
 
     }
+
+
 
     private void ScanWifiList() {
         wifiManager.startScan();
@@ -116,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void setAdapter() {
 
         listAdapter = new ListAdapter(getApplicationContext(), wifiList);
-        networkListView.setAdapter(listAdapter);
 
+        networkListView.setAdapter(listAdapter);
     }
 
     private void getMacAddress() {
@@ -133,6 +184,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             stringMacByte = "0" + stringMacByte;
                         }
                         macAddress = macAddress + stringMacByte.toUpperCase() + ":";
+                        networkData.put("macAddress", macAddress);
+                    //    networkData.put("GeoPoint", LatLng.getText().toString());
+
                     }
                     break;
                 }
@@ -160,7 +214,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 gotoLocation(location.getLatitude(), location.getLongitude());
 
 
+
                 LatLng.setText(location.getLatitude() + ", " + location.getLongitude());
+
+
+//                geoPoint[0] = location.getLongitude();
+//                geoPoint[1] = location.getLongitude();
+
+
 
 
             }
@@ -172,7 +233,60 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 18);
         mGoogleMap.moveCamera(cameraUpdate);
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-       // mGoogleMap.setMapStyle(GoogleMap.MAP_TYPE_NORMAL);
+        //GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+        networkData.put("GeoPoint", new GeoPoint(latLng.latitude, latLng.longitude));
+
+//        wifiList = wifiManager.getScanResults();
+//
+//        System.out.println("this is wifiList");
+//
+//        System.out.println(wifiList);
+
+        db.collection("WBIP").document(networkData.get("macAddress").toString()).set(networkData).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Toast.makeText(MainActivity.this, "Note Saved", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull  Exception e) {
+                Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+       // saveGeoToMap(latitude, longitude);
+
+     //   networkData.put("GeoPoint", geoPoint);
+
+
+        //     networkData.put("GeoPoint", new GeoPoint(latLng.latitude, latLng.longitude));
+     //   System.out.println(networkData);
+
+        // mGoogleMap.setMapStyle(GoogleMap.MAP_TYPE_NORMAL);
+    }
+
+
+
+    public static GeoPoint saveGeoToMap(double latitude, double longitude) {
+        System.out.println("this is latitude"+ Double.toString(latitude));
+        System.out.println("this is longitude"+ Double.toString(longitude));
+
+
+
+        GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+
+        System.out.println("this is longitude"+ Double.toString(geoPoint.getLatitude()));
+        System.out.println("this is longitude"+ Double.toString(geoPoint.getLongitude()));
+
+       // networkData.put("GeoPoint", new GeoPoint(geoPoint.getLatitude(), geoPoint.getLongitude()));
+
+        double coordinate[] = new double[2];
+        coordinate[0] = geoPoint.getLatitude();
+        coordinate[1] = geoPoint.getLongitude();
+        System.out.println("-----");
+        System.out.println(coordinate);
+        return geoPoint;
     }
 
     private void checkMyPermission() {
@@ -208,6 +322,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    private void saveDataToFirebase() {
+        System.out.println(networkData);
+        System.out.println("-----");
+      //  System.out.println(geoPoint[0]);
+
+        //  Toast.makeText(MainActivity.this, "test save to firebase", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(MainActivity.this, networkData.get("GeoPoint").toString(), Toast.LENGTH_SHORT).show();
+
+    }
 
     class WifiReceiver extends BroadcastReceiver{
 
