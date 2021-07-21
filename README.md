@@ -13,3 +13,6 @@ This is the interface of the app:
 This is the interface of database:
 
 ![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/Capture.PNG?raw=true)
+
+This is the detail of each wifi:
+![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/networkDetail.jpg?raw=true)
