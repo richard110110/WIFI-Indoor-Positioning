@@ -105,10 +105,13 @@ public class ListAdapter extends BaseAdapter {
                         networkData.put("macAddress", macAddress);
                       //  String networkDetail[] = new String[2];
 
-                        if(!wifiList.get(position).SSID.isEmpty()){
+                        if(!wifiList.get(position).SSID.isEmpty() & !(wifiList.get(position).SSID == null)){
                         //    networkCollection.put(wifiList.get(position).SSID, String.valueOf(wifiList.get(position).level));
                           //  networkData.put("networkCollection", networkCollection);
                                networkData.put(wifiList.get(position).SSID, String.valueOf(wifiList.get(position).level));
+
+                               
+
 
                         }
 
@@ -123,7 +126,7 @@ public class ListAdapter extends BaseAdapter {
         } catch (SocketException e){
             e.printStackTrace();
         }
-        DocumentReference docRef = db.collection("WBIP").document(networkData.get("macAddress").toString());
+      //  DocumentReference docRef = db.collection("WBIP").document(networkData.get("macAddress").toString());
         System.out.println("----firebase docRef------");
         System.out.println(networkData);
 

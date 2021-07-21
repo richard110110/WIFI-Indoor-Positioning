@@ -23,6 +23,7 @@ import android.os.PersistableBundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -86,6 +87,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      Map<String, Object> networkData = new HashMap<>();
     Double[] geoPoint = new Double[2];
 
+    Intent newIntent;
+
+
 
 
     @Override
@@ -95,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Mac_address = findViewById(R.id.Mac_address);
         LatLng = findViewById(R.id.Latlng);
         networkListView = (ListView)findViewById(R.id.networkListView);
+        Intent newIntent = new Intent(MainActivity.this, NetworkActivity.class);
 
         wifiManager = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
@@ -121,6 +126,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     }
                 });
+            }
+        });
+
+        networkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                newIntent.putExtra("SSID", wifiList.get(position).SSID);
+                newIntent.putExtra("RSSI", String.valueOf(wifiList.get(position).level));
+                newIntent.putExtra("Frequency", String.valueOf(wifiList.get(position).frequency));
+              //  newIntent.putExtra("Frequency", wifiList.get(position).frequency);
+//                newIntent.putExtra()
+                      Toast.makeText(MainActivity.this,  String.valueOf(wifiList.get(position).frequency), Toast.LENGTH_SHORT).show();
+
+
+                startActivity(newIntent);
             }
         });
 
@@ -185,7 +205,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                         macAddress = macAddress + stringMacByte.toUpperCase() + ":";
                         networkData.put("macAddress", macAddress);
-                    //    networkData.put("GeoPoint", LatLng.getText().toString());
+                      //  newIntent.putExtra("macAddress", networkData.get("macAddress").toString());
+
+                        //    networkData.put("GeoPoint", LatLng.getText().toString());
 
                     }
                     break;
