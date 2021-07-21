@@ -17,4 +17,4 @@ This is the interface of database:
 This is the detail of each wifi:
 This screenshot show the detail of each wifi
 includes SSID, RSSI, frequency (in MHz), distance
-![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/networkDetail.jpg?raw=true)
+![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/networkDetaillabel.jpg?raw=true)
