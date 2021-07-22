@@ -71,6 +71,8 @@ public class ListAdapter extends BaseAdapter {
 
             holder.networkName = (TextView)view.findViewById(R.id.txtWifiName);
             holder.RSSI = (TextView)view.findViewById(R.id.WiFiRSSI);
+            holder.Frequency = (TextView)view.findViewById(R.id.WiFiFrequency);
+            holder.Distance = (TextView)view.findViewById(R.id.WiFiDistance);
             view.setTag(holder);
 
         } else {
@@ -81,6 +83,8 @@ public class ListAdapter extends BaseAdapter {
         if(!wifiList.get(position).SSID.isEmpty()){
             holder.networkName.setText(wifiList.get(position).SSID);
             holder.RSSI.setText(String.valueOf(wifiList.get(position).level));
+            holder.Frequency.setText(String.valueOf(wifiList.get(position).frequency));
+            holder.Distance.setText(String.format(Double.toString(calculateDistance(Double.parseDouble(String.valueOf(wifiList.get(position).level)), Double.parseDouble(String.valueOf(wifiList.get(position).frequency)))), "%.2f"));
         }
 
 
@@ -156,5 +160,12 @@ public class ListAdapter extends BaseAdapter {
     class Holder{
         TextView networkName;
         TextView RSSI;
+        TextView Frequency;
+        TextView Distance;
+    }
+
+    public double calculateDistance(double signalLevelInDb, double freqInMHz) {
+        double exp = (27.55 - (20 * Math.log10(freqInMHz)) + Math.abs(signalLevelInDb)) / 20.0;
+        return Math.pow(10.0, exp);
     }
 }
