@@ -21,3 +21,4 @@ includes SSID, RSSI, frequency (in MHz), distance
 
 you can refer the formula to calculate the distance
 [link to distance formula](https://en.wikipedia.org/wiki/Free-space_path_loss)
+[link to distance formula source](https://stackoverflow.com/questions/11217674/how-to-calculate-distance-from-wifi-router-using-signal-strength)
