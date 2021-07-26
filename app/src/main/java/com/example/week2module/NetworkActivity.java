@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +50,13 @@ public class NetworkActivity extends AppCompatActivity {
             NetworkFrequency.setText(Frequency);
 
            //Toast.makeText(NetworkActivity.this, MacAddress, Toast.LENGTH_SHORT).show();
-            Distance.setText(Double.toString(calculateDistance(Double.parseDouble(RSSI), Double.parseDouble(Frequency))));
+            DecimalFormat f = new DecimalFormat("0.00");
+
+            String distance =Double.toString(calculateDistance(Double.parseDouble(RSSI), Double.parseDouble(Frequency)));
+
+
+            Distance.setText(f.format(calculateDistance(Double.parseDouble(RSSI), Double.parseDouble(Frequency))));
+
 
 
             getMacAddress();

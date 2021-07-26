@@ -22,6 +22,7 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -80,11 +81,16 @@ public class ListAdapter extends BaseAdapter {
         }
       //  holder.tvDetails[0] = wifiList.get(position).SSID;
 
+        DecimalFormat f = new DecimalFormat("0.00");
+
+       // String distance =Double.toString(calculateDistance(Double.parseDouble(RSSI), Double.parseDouble(Frequency)));
+
         if(!wifiList.get(position).SSID.isEmpty()){
             holder.networkName.setText(wifiList.get(position).SSID);
             holder.RSSI.setText(String.valueOf(wifiList.get(position).level));
             holder.Frequency.setText(String.valueOf(wifiList.get(position).frequency));
-            holder.Distance.setText(String.format(Double.toString(calculateDistance(Double.parseDouble(String.valueOf(wifiList.get(position).level)), Double.parseDouble(String.valueOf(wifiList.get(position).frequency)))), "%.2f"));
+            holder.Distance.setText(f.format(calculateDistance(Double.parseDouble(String.valueOf(wifiList.get(position).level)),Double.parseDouble(String.valueOf(wifiList.get(position).frequency)))));
+         //   holder.Distance.setText(String.format(Double.toString(f.format(calculateDistance(Double.parseDouble(String.valueOf(wifiList.get(position).level)), Double.parseDouble(String.valueOf(wifiList.get(position).frequency))))));
         }
 
 
