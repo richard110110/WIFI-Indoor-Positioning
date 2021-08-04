@@ -17,7 +17,7 @@ This is the interface of database:
 This is the detail of each wifi:
 This screenshot show the detail of each wifi
 includes SSID, RSSI, frequency (in MHz), distance, and the editText input for maunally inputting coordinate
-![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/coordinate.jpg?raw=true)
+![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/newcoordiante.jpg?raw=true)
 
 
 
