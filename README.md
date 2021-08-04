@@ -16,8 +16,10 @@ This is the interface of database:
 
 This is the detail of each wifi:
 This screenshot show the detail of each wifi
-includes SSID, RSSI, frequency (in MHz), distance
-![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/detail.jpg?raw=true)
+includes SSID, RSSI, frequency (in MHz), distance, and the editText input for maunally inputting coordinate
+![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/coordinate.jpg?raw=true)
+
+
 
 you can refer the formula to calculate the distance
 [link to distance formula](https://en.wikipedia.org/wiki/Free-space_path_loss)
