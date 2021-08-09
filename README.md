@@ -19,6 +19,10 @@ This screenshot show the detail of each wifi
 includes SSID, RSSI, frequency (in MHz), distance, and the editText input for maunally inputting coordinate
 ![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/newcoordiante.jpg?raw=true)
 
+This is the calculated intersection points of center point and each wifi
+![Image of database](https://github.com/richard110110/WIFI-Indoor-Positioning/blob/main/image/sprint6.jpg?raw=true)
+
+
 
 
 you can refer the formula to calculate the distance
