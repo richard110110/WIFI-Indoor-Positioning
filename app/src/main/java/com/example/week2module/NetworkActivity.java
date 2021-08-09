@@ -1,11 +1,25 @@
 package com.example.week2module;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -16,12 +30,19 @@ import java.util.List;
 import java.util.Map;
 
 public class NetworkActivity extends AppCompatActivity {
+    private SharedPreferences sharedPreferences;
+
 
     TextView NetworkSSID;
     TextView NetworkRSSI;
     TextView NetworkFrequency;
     TextView Distance;
+    EditText editTextCoordinate;
     Map<String, Object> networkData = new HashMap<>();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private DatabaseReference mDatabase;
+
+
 
 
     @Override
@@ -33,14 +54,24 @@ public class NetworkActivity extends AppCompatActivity {
         NetworkRSSI = findViewById(R.id.NetworkRSSI);
         NetworkFrequency = findViewById(R.id.NetworkFrequency);
         Distance = findViewById(R.id.distance);
+        editTextCoordinate = findViewById(R.id.editTextCoordinate);
 
         Intent intent = this.getIntent();
+
+        sharedPreferences = getSharedPreferences("coordinate_save", Context.MODE_PRIVATE);
+
+
+      //  mDatabase = FirebaseDatabase.getInstance().getReference();
+
 
         if(intent != null){
             String SSID = intent.getStringExtra("SSID");
             String RSSI = intent.getStringExtra("RSSI");
           //  int Frequency = intent.getIntExtra("Frequency");
             String Frequency = intent.getStringExtra("Frequency");
+           // String Geolocation = intent.getStringExtra("Geolocation");
+
+           // Toast.makeText(NetworkActivity.this, Geolocation, Toast.LENGTH_SHORT).show();
 
             // String MacAddress = intent.getStringExtra("macAddress");
 
@@ -57,11 +88,26 @@ public class NetworkActivity extends AppCompatActivity {
 
             Distance.setText(f.format(calculateDistance(Double.parseDouble(RSSI), Double.parseDouble(Frequency))));
 
+      //      mDatabase.getDatabase();
+
+//            mDatabase.child("users").child(SSID).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+//                @Override
+//                public void onComplete(@NonNull Task<DataSnapshot> task) {
+//                    if (!task.isSuccessful()) {
+//                        Log.e("firebase", "Error getting data", task.getException());
+//                    }
+//                    else {
+//                        Log.d("firebase", String.valueOf(task.getResult().getValue()));
+//                    }
+//                }
+//            });
+
+           // System.out.println(db);
 
 
             getMacAddress();
 
-            updateValue();
+//            updateValue();
 
 
 
@@ -69,9 +115,45 @@ public class NetworkActivity extends AppCompatActivity {
         }
     }
 
-    private void updateValue() {
+    /*
+
+     */
+    public void testSharedPreference(View view){
+        Intent intent = this.getIntent();
+
+
+        String saveData = editTextCoordinate.getText().toString() + "," + Distance.getText() ;
+
+
+        if(TextUtils.isEmpty(editTextCoordinate.getText())){
+            Toast.makeText(this, "please type coordinate", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String SSID = intent.getStringExtra("SSID");
+
+        updateValue(SSID, saveData);
+    }
+    public void readDataToScreen(View view){
+
+        Intent intent = this.getIntent();
+        String SSID = intent.getStringExtra("SSID");
+
+        String data = getData(SSID);
+        Toast.makeText(this, data, Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateValue(String key, String data) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(key, data);
+        editor.commit();
+        Toast.makeText(this, data, Toast.LENGTH_SHORT).show();
+
      //   Toast.makeText(NetworkActivity.this, networkData.get("macAddress").toString(), Toast.LENGTH_SHORT).show();
 
+    }
+
+    private String getData(String key){
+        return sharedPreferences.getString(key, "");
     }
 
     public double calculateDistance(double signalLevelInDb, double freqInMHz) {

@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -24,6 +25,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -43,6 +45,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.SetOptions;
@@ -56,6 +59,8 @@ import com.karumi.dexter.listener.single.PermissionListener;
 import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,14 +83,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<ScanResult> wifiList;
     EditText editText;
     Button buttonClick;
+    ListView intersectionListview;
+    TextInputEditText intersectionPoint;
+    Button refresh;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     TextView Mac_address;
     TextView LatLng;
+    StringBuilder stringBuilder = new StringBuilder();
+
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
      Map<String, Object> networkData = new HashMap<>();
     Double[] geoPoint = new Double[2];
+    private SharedPreferences sharedPreferences;
+    ArrayList<String> savedCoordinate = new ArrayList<>();
+    ArrayList<double[]> savedIntersection = new ArrayList<>();
 
     Intent newIntent;
 
@@ -104,28 +117,82 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         wifiManager = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
 
-        editText = (EditText)findViewById(R.id.manualText);
+      //  editText = (EditText)findViewById(R.id.manualText);
         buttonClick = (Button)findViewById(R.id.click);
+        refresh = (Button)findViewById(R.id.refresh);
+
+        sharedPreferences = getSharedPreferences("coordinate_save", Context.MODE_PRIVATE);
+        intersectionPoint = findViewById(R.id.intersectionPoints);
+        intersectionPoint.setText(null);
+
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intersectionPoint.getText().clear();
+                stringBuilder.setLength(0);
+
+            }
+        });
 
         buttonClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String data = editText.getText().toString();
+//                String data = editText.getText().toString();
+    //            String result = getData("NETGEAR43");
 
-                networkData.put("manualCoordinate", data);
+                savedCoordinate.clear();
 
-                db.collection("WBIP").document(networkData.get("macAddress").toString()).set(networkData, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Toast.makeText(MainActivity.this, "Manual location Saved", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull  Exception e) {
-                        Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+               // intersectionPoint.getText().clear();
+                Map<String, ?> allEntries = sharedPreferences.getAll();
+                for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+                    Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
+                    String[] startConvert = entry.getValue().toString().split(",");
 
-                    }
-                });
+                    Log.d("0", startConvert[0]);
+                    Log.d("1", startConvert[1]);
+                    Log.d("2", startConvert[2]);
+
+                    savedIntersection.add(intersection.getIntersectionPoint(Double.parseDouble(LatLng.getText().toString().split(",")[0].trim()), Double.parseDouble(LatLng.getText().toString().split(",")[1].trim()), Double.parseDouble(startConvert[2]), Double.parseDouble(startConvert[0]), Double.parseDouble(startConvert[1]), Double.parseDouble(startConvert[2])));
+
+
+
+
+                    savedCoordinate.add(entry.getValue().toString());
+
+                }
+
+                Log.d("result", savedCoordinate.toString());
+                Log.d("coordinate",LatLng.getText().toString());
+
+              //  StringBuilder stringBuilder = new StringBuilder();
+                for (int i=0; i<savedIntersection.size();i++){
+                    Log.d("intersection", Arrays.toString(savedIntersection.get(i)));
+                    stringBuilder.append(Arrays.toString(savedIntersection.get(i)));
+
+                }
+
+                Log.d("Allintersection", stringBuilder.toString());
+                intersectionPoint.setText(stringBuilder.toString());
+
+                //   intersectionPoint.setText(savedIntersection.toString());
+
+//                Log.d("result", result);
+
+
+//                networkData.put("manualCoordinate", data);
+//
+//                db.collection("WBIP").document(networkData.get("macAddress").toString()).set(networkData, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void unused) {
+//                        Toast.makeText(MainActivity.this, "Manual location Saved", Toast.LENGTH_SHORT).show();
+//                    }
+//                }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull  Exception e) {
+//                        Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+//
+//                    }
+//                });
             }
         });
 
@@ -184,6 +251,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setAdapter();
     }
 
+    private String getData(String key){
+        return sharedPreferences.getString(key, "");
+    }
+
     private void setAdapter() {
 
         listAdapter = new ListAdapter(getApplicationContext(), wifiList);
@@ -205,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                         macAddress = macAddress + stringMacByte.toUpperCase() + ":";
                         networkData.put("macAddress", macAddress);
+                      //  newIntent.putExtra("macAddress", macAddress);
                       //  newIntent.putExtra("macAddress", networkData.get("macAddress").toString());
 
                         //    networkData.put("GeoPoint", LatLng.getText().toString());
@@ -257,6 +329,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         //GeoPoint geoPoint = new GeoPoint(latitude, longitude);
         networkData.put("GeoPoint", new GeoPoint(latLng.latitude, latLng.longitude));
+//        newIntent.putExtra("Geolocation", new GeoPoint(latLng.latitude, latLng.longitude).toString());
 
 //        wifiList = wifiManager.getScanResults();
 //
