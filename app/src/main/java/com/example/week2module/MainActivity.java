@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import android.content.DialogInterface;
+import android.app.AlertDialog;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -63,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ListView intersectionListview;
     TextInputEditText intersectionPoint;
     Button refresh;
+    AlertDialog.Builder builder;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     TextView Mac_address;
@@ -116,8 +120,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         wifiManager = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
+        builder = new AlertDialog.Builder(this);
 
-      //  editText = (EditText)findViewById(R.id.manualText);
+        //  editText = (EditText)findViewById(R.id.manualText);
         buttonClick = (Button)findViewById(R.id.click);
         refresh = (Button)findViewById(R.id.refresh);
 
@@ -164,15 +169,95 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("result", savedCoordinate.toString());
                 Log.d("coordinate",LatLng.getText().toString());
 
+                Double A = 0.0;
+                Double B = 0.0;
+                Double C = 0.0;
+                Double D = 0.0;
+
+                LinkedList<Double> linkedListA = new LinkedList<>();
+                LinkedList<Double> linkedListB = new LinkedList<>();
+                LinkedList<Double> linkedListC = new LinkedList<>();
+                LinkedList<Double> linkedListD = new LinkedList<>();
+
+//                List<Double> listA = new List<Double>();
+//                List<Double> listB;
+//                List<Double> listC;
+//                List<Double> listD;
+
+
               //  StringBuilder stringBuilder = new StringBuilder();
                 for (int i=0; i<savedIntersection.size();i++){
                     Log.d("intersection", Arrays.toString(savedIntersection.get(i)));
                     stringBuilder.append(Arrays.toString(savedIntersection.get(i)));
-
+                    linkedListA.add(savedIntersection.get(i)[0]);
+                    linkedListB.add(savedIntersection.get(i)[1]);
+                    linkedListC.add(savedIntersection.get(i)[2]);
+                    linkedListD.add(savedIntersection.get(i)[3]);
                 }
 
                 Log.d("Allintersection", stringBuilder.toString());
                 intersectionPoint.setText(stringBuilder.toString());
+                Log.d("linkedListA", linkedListA.toString());
+                Log.d("linkedListB", linkedListB.toString());
+                Log.d("linkedListC", linkedListC.toString());
+                Log.d("linkedListD", linkedListD.toString());
+                for(double each: linkedListA){
+                    A += each;
+                    Log.d("eachA",String.valueOf(each));
+                //    A = A/linkedListA.size();
+                }
+
+                for(double each: linkedListB){
+                    B += each;
+                    Log.d("eachB",String.valueOf(each));
+
+                 //   B = B/linkedListB.size();
+                }
+
+                for(double each: linkedListC){
+                    C += each;
+                    Log.d("eachC",String.valueOf(each));
+
+                  //  C = C/linkedListC.size();
+                }
+
+                for(double each: linkedListD){
+                    D += each;
+                    Log.d("eachD",String.valueOf(each));
+
+                 //   D = D/linkedListD.size();
+                }
+
+                builder.setMessage(R.string.dialog_message) .setTitle(R.string.dialog_title);
+                builder.setMessage("This is the average point of intersection points: " + String.valueOf(B/linkedListB.size() +D/linkedListD.size() ) + " " + String.valueOf(A/linkedListA.size() +C/linkedListC.size() ))
+                        .setCancelable(false)
+                        .setNegativeButton("close", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //  Action for 'NO' Button
+                                dialog.cancel();
+                             //   Toast.makeText(getApplicationContext(),"you choose no action for alertbox",
+                              //          Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                AlertDialog alert = builder.create();
+                //Setting the title manually
+                alert.setTitle("average point");
+                alert.show();
+
+                Log.d("X", String.valueOf(A/linkedListA.size() +C/linkedListC.size() ));
+                Log.d("Y", String.valueOf(B/linkedListB.size() + D/linkedListD.size()));
+             //   Log.d("C", String.valueOf(C/linkedListC.size()));
+              //  Log.d("D", String.valueOf(D/linkedListD.size()));
+
+//                Log.d("B", B.toString());
+//                Log.d("C", C.toString());
+//                Log.d("D", D.toString());
+
+
+
+
+
 
                 //   intersectionPoint.setText(savedIntersection.toString());
 
